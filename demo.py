@@ -1,11 +1,11 @@
 from scipy.io import loadmat
 import numpy as np
-import CreateData as CreateData
+from CreateData import CreateData
 
 def RegraAleatoria(casename):
 
     data = loadmat(casename)
-    Patio, Porto, R, C = CreateData(data)
+    Patio, phi, Navio = CreateData(data)
     print('parametros criados')
 
 

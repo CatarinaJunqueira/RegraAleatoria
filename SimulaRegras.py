@@ -578,23 +578,84 @@ def Rr8(Patio): # Caserta - prioridades por coluna + 1 cleaning move
                         N_Rem_aux += 1
 
                 Patio[i][j] = 0  # remover o conteiner do patio
-                #print(Patio)
                 # carregar no navio
 
     print(N_Rem)
 
     return N_Rem #, Navio
 
+def Rr9(Patio): # Regra da menor coluna
 
+    N_Rem = 0 # numero de remanejamentos
+    conteineres = np.unique(Patio)
+    conteineres = conteineres[conteineres > 0].tolist()
+    L = Patio.shape[0]  # numero de linhas no patio
 
+    for c in conteineres:
+        i, j = np.where(Patio == c)  # localizando posicao do conteiner a ser retirado
+        i = int(i)
+        j = int(j)
 
+        if Patio[i-1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
+          Patio[i][j] = 0
+           # carregar no navio
 
+        else:  # caso contrário...
+            index_mover = np.nonzero(Patio[:i, j])[0]  # identificar as linhas que tem conteineres acima bloqueando.
+            for c_rmj in range(len(index_mover)):  # de 1 ateh a qntd de conteineres que devem ser remanejados
+                # buscar um local vazio:
+                Aux = np.count_nonzero(Patio, axis=0)
+                jj = np.argmin(Aux)  # coluna do menor valor em Aux # Only the first occurrence is returned.
+                int(jj)
+                if jj == j: # se eh a mesma coluna em que o conteiner jah estah
+                    Aux = np.delete(Aux, jj)
+                    jj = np.argmin(Aux)
+                    int(jj)
+                Patio[L-Aux[jj]-1][jj] = Patio[index_mover[c_rmj]][j]  # mover
+                Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
+                N_Rem += 1
+            Patio[i][j] = 0  # remover o conteiner do patio
+            # carregar no navio
 
+    return N_Rem #, Navio
 
+def Rr10(Patio):  # Regra da coluna mais próxima
 
+    N_Rem = 0  # numero de remanejamentos
+    conteineres = np.unique(Patio)
+    conteineres = conteineres[conteineres>0].tolist()
+    L = Patio.shape[0]  # numero de linhas no patio
+    C = Patio.shape[1]  # numero de colunas no patio
 
+    for c in conteineres:
+        i, j = np.where(Patio == c)  # localizando posicao do conteiner a ser retirado
+        i = int(i)
+        j = int(j)
 
+        if Patio[i-1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
+          Patio[i][j] = 0
+           # carregar no navio
 
+        else:  # caso contrário...
+            index_mover = np.nonzero(Patio[:i, j])[0]  # identificar as linhas que tem conteineres acima bloqueando.
+            for c_rmj in range(len(index_mover)):  # de 1 ateh a qntd de conteineres que devem ser remanejados
+                # buscar um local vazio:
+                Aux = np.count_nonzero(Patio, axis=0)
+                jj = np.argmin(Aux)  # coluna do menor valor em Aux # Only the first occurrence is returned.
+                int(jj)
+                if jj == j: # se eh a mesma coluna em que o conteiner jah estah
+                    Aux = np.delete(Aux, jj)
+                    jj = np.argmin(Aux)
+                    int(jj)
+                Patio[L-Aux[jj]-1][jj] = Patio[index_mover[c_rmj]][j]  # mover
+                Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
+                N_Rem += 1
+            Patio[i][j] = 0  # remover o conteiner do patio
+            # carregar no navio
+
+    print(N_Rem)
+
+    return N_Rem #, Navio
 
 
 
@@ -611,7 +672,9 @@ if __name__ == '__main__':
     # _ = Rr5(Patio)
     # _ = Rr6(Patio)
     # _ = Rr7(Patio)
-    Patio = np.array([[0, 0, 3],[6, 0, 4],[7, 0, 5], [8, 2, 1]])
-    _ = Rr8(Patio)
+    #_ = Rr8(Patio)
+    Patio = np.array([[0, 0, 3], [6, 0, 4], [7, 0, 5], [8, 2, 1]])
+    #_ = Rr9(Patio)
+    _ = Rr10(Patio)
 
 

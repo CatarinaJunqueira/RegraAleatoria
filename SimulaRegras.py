@@ -264,7 +264,7 @@ def Rr6(Patio): # Por linha, intercalando as linhas, 2
 #-----------------------------------------------------------------#
 #-----------------------------------------------------------------#
 def Rr7(Patio): # Caserta - prioridades por coluna
-    print(Patio)
+
     P = Patio.max()
     N_Rem = 0 # numero de remanejamentos
     conteineres = np.unique(Patio)
@@ -279,7 +279,6 @@ def Rr7(Patio): # Caserta - prioridades por coluna
 
         if Patio[i-1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
           Patio[i][j] = 0
-          print(Patio)
            # carregar no navio
 
         else:  # caso contrário...
@@ -320,7 +319,7 @@ def Rr7(Patio): # Caserta - prioridades por coluna
                     N_Rem += 1
 
             Patio[i][j] = 0  # remover o conteiner do patio
-            print(Patio)
+
             # carregar no navio
 
     print(N_Rem)
@@ -330,7 +329,7 @@ def Rr7(Patio): # Caserta - prioridades por coluna
 #-----------------------------------------------------------------#
 #-----------------------------------------------------------------#
 def Rr8(Patio): # Caserta - prioridades por coluna + 1 cleaning move
-    print(Patio)
+
     P = Patio.max()
     N_Rem = 0 # numero de remanejamentos
     conteineres = np.unique(Patio)
@@ -347,7 +346,6 @@ def Rr8(Patio): # Caserta - prioridades por coluna + 1 cleaning move
 
         if Patio[i-1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
           Patio[i][j] = 0
-          print(Patio)
            # carregar no navio
 
         else:  # caso contrário...
@@ -480,7 +478,6 @@ def Rr8(Patio): # Caserta - prioridades por coluna + 1 cleaning move
 
                     if Patio[i - 1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
                         Patio[i][j] = 0
-                        print(Patio)
                         # carregar no navio
 
                     else:  # caso contrário...
@@ -617,6 +614,8 @@ def Rr9(Patio): # Regra da menor coluna
             Patio[i][j] = 0  # remover o conteiner do patio
             # carregar no navio
 
+
+    print(N_Rem)
     return N_Rem #, Navio
 
 def Rr10(Patio):  # Regra da coluna mais próxima
@@ -635,26 +634,62 @@ def Rr10(Patio):  # Regra da coluna mais próxima
         if Patio[i-1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
           Patio[i][j] = 0
            # carregar no navio
-
-        else:  # caso contrário...
+        else:
             index_mover = np.nonzero(Patio[:i, j])[0]  # identificar as linhas que tem conteineres acima bloqueando.
             for c_rmj in range(len(index_mover)):  # de 1 ateh a qntd de conteineres que devem ser remanejados
                 # buscar um local vazio:
                 Aux = np.count_nonzero(Patio, axis=0)
-                jj = np.argmin(Aux)  # coluna do menor valor em Aux # Only the first occurrence is returned.
-                int(jj)
-                if jj == j: # se eh a mesma coluna em que o conteiner jah estah
-                    Aux = np.delete(Aux, jj)
-                    jj = np.argmin(Aux)
-                    int(jj)
-                Patio[L-Aux[jj]-1][jj] = Patio[index_mover[c_rmj]][j]  # mover
-                Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
-                N_Rem += 1
+                #------------------------------------------------------------------------------------------------------#
+                #------------------------------------------------------------------------------------------------------#
+                if j == C-1: # se o conteiner a sair estah na coluna mais a direita
+                    for j_aux1 in range(j - 1, -1, -1):  # linhas de baixo para cima
+                        if Aux[j_aux1] != L:  # se a coluna nao estah cheia
+                            Patio[L - Aux[j_aux1] - 1][j_aux1] = Patio[index_mover[c_rmj]][j]  # mover
+                            Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
+                            N_Rem += 1
+                            break
+                #------------------------------------------------------------------------------------------------------#
+                #------------------------------------------------------------------------------------------------------#
+                if j == 0:  # se o conteiner a sair estah na coluna mais a esquerda
+                    for j_aux1 in range(j+1,C):  # linhas de baixo para cima
+                        if Aux[j_aux1] != L:  # se a coluna nao estah cheia
+                            Patio[L - Aux[j_aux1] - 1][j_aux1] = Patio[index_mover[c_rmj]][j]  # mover
+                            Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
+                            N_Rem += 1
+                            break
+                # ------------------------------------------------------------------------------------------------------#
+                # ------------------------------------------------------------------------------------------------------#
+                if j > 0 and j < C-1:
+                    for j_aux1 in range(j-1, -1, -1):  # linhas de baixo para cima
+                        for j_aux2 in range(j+1,C):  # linhas de baixo para cima
+                            if Aux[j_aux1] <= Aux[j_aux2]:
+                                if Aux[j_aux1] != L:  # se a coluna nao estah cheia
+                                    Patio[L - Aux[j_aux1] - 1][j_aux1] = Patio[index_mover[c_rmj]][j]  # mover
+                                    Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
+                                    N_Rem += 1
+                                    break
+                                else:
+                                    if Aux[j_aux2] != L:  # se a coluna nao estah cheia
+                                        Patio[L - Aux[j_aux2] - 1][j_aux2] = Patio[index_mover[c_rmj]][j]  # mover
+                                        Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
+                                        N_Rem += 1
+                                        break
+                            else:
+                                if Aux[j_aux2] != L:  # se a coluna nao estah cheia
+                                    Patio[L - Aux[j_aux2] - 1][j_aux2] = Patio[index_mover[c_rmj]][j]  # mover
+                                    Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
+                                    N_Rem += 1
+                                    break
+                                else:
+                                    if Aux[j_aux1] != L:  # se a coluna nao estah cheia
+                                        Patio[L - Aux[j_aux1] - 1][j_aux1] = Patio[index_mover[c_rmj]][j]  # mover
+                                        Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
+                                        N_Rem += 1
+                                        break
+
             Patio[i][j] = 0  # remover o conteiner do patio
-            # carregar no navio
 
     print(N_Rem)
-
     return N_Rem #, Navio
 
 
@@ -664,17 +699,25 @@ if __name__ == '__main__':
     # data = loadmat('InstanciaModeloIntegrado_1.mat')
     # Patios = data['Patios'].tolist()
     # Patio = Patios[0][0]
-
-    # _ = Rr1(Patio)
-    # _ = Rr2(Patio)
-    # _ = Rr3(Patio)
-    # _ = Rr4(Patio)
-    # _ = Rr5(Patio)
-    # _ = Rr6(Patio)
-    # _ = Rr7(Patio)
-    #_ = Rr8(Patio)
-    Patio = np.array([[0, 0, 3], [6, 0, 4], [7, 0, 5], [8, 2, 1]])
-    #_ = Rr9(Patio)
-    _ = Rr10(Patio)
+   # Patio = np.array([[0, 0, 5], [6, 0, 4], [7, 0, 3], [8, 2, 1]])
+   # _ = Rr1(Patio)
+   # Patio = np.array([[0, 0, 5], [6, 0, 4], [7, 0, 3], [8, 2, 1]])
+   # _ = Rr2(Patio)
+   # Patio = np.array([[0, 0, 5], [6, 0, 4], [7, 0, 3], [8, 2, 1]])
+   # _ = Rr3(Patio)
+   # Patio = np.array([[0, 0, 5], [6, 0, 4], [7, 0, 3], [8, 2, 1]])
+   # _ = Rr4(Patio)
+   # Patio = np.array([[0, 0, 5], [6, 0, 4], [7, 0, 3], [8, 2, 1]])
+   # _ = Rr5(Patio)
+   # Patio = np.array([[0, 0, 5], [6, 0, 4], [7, 0, 3], [8, 2, 1]])
+   # _ = Rr6(Patio)
+   # Patio = np.array([[0, 0, 5], [6, 0, 4], [7, 0, 3], [8, 2, 1]])
+   # _ = Rr7(Patio)
+   # Patio = np.array([[0, 0, 5], [6, 0, 4], [7, 0, 3], [8, 2, 1]])
+   # _ = Rr8(Patio)
+   # Patio = np.array([[0, 0, 5], [6, 0, 4], [7, 0, 3], [8, 2, 1]])
+   # _ = Rr9(Patio)
+   # Patio = np.array([[0, 0, 5], [6, 0, 4], [7, 0, 3], [8, 2, 1]])
+   # _ = Rr10(Patio)
 
 

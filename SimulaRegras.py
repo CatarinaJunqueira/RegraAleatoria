@@ -177,8 +177,8 @@ def Rr5(Patio): # Por linha, intercalando as linhas
 
     for c in conteineres:
         i, j = np.where(Patio == c)  # localizando posicao do conteiner a ser retirado
-        i=int(i)
-        j=int(j)
+        i = int(i)
+        j = int(j)
 
         if Patio[i-1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
           Patio[i][j] = 0
@@ -581,6 +581,8 @@ def Rr8(Patio): # Caserta - prioridades por coluna + 1 cleaning move
 
     return N_Rem #, Navio
 
+#-----------------------------------------------------------------#
+#-----------------------------------------------------------------#
 def Rr9(Patio): # Regra da menor coluna
 
     N_Rem = 0 # numero de remanejamentos
@@ -618,6 +620,8 @@ def Rr9(Patio): # Regra da menor coluna
     print(N_Rem)
     return N_Rem #, Navio
 
+#-----------------------------------------------------------------#
+#-----------------------------------------------------------------#
 def Rr10(Patio):  # Regra da coluna mais próxima
 
     N_Rem = 0  # numero de remanejamentos
@@ -691,14 +695,152 @@ def Rr10(Patio):  # Regra da coluna mais próxima
 
     print(N_Rem)
     return N_Rem #, Navio
+#-----------------------------------------------------------------#
+#-----------------------------------------------------------------#
+# Regras do Navio:
+#-----------------------------------------------------------------#
+#-----------------------------------------------------------------#
+def Rc1(Navio,cont): # Por linha, de baixo para cima, da esquerda para a direita
+
+    B = len(Navio)         # numero de baias no navio
+    L = Navio[0].shape[0]  # numero de linhas no navio
+    C = Navio[0].shape[1]  # numero de colunas no navio
+
+    for b in range(B):
+        for l in range(L-1,-1,-1):
+            for c in range(C):
+                if Navio[b][l][c] != 0:
+                    Navio[b][l][c] = cont
+                    return Navio
+
+#-----------------------------------------------------------------#
+#-----------------------------------------------------------------#
+def Rc2(Navio,cont):   #Por coluna, de baixo para cima, da esquerda para a direita
+
+    B = len(Navio)         # numero de baias no navio
+    L = Navio[0].shape[0]  # numero de linhas no navio
+    C = Navio[0].shape[1]  # numero de colunas no navio
+
+    for b in range(B):
+        for c in range(C):
+            for l in range(L-1,-1,-1):
+                if Navio[b][l][c] != 0:
+                    Navio[b][l][c] = cont
+                    return Navio
+
+#-----------------------------------------------------------------#
+#-----------------------------------------------------------------#
+def Rc3(Navio,cont): # por linha, da direita para a esquerda
+
+    B = len(Navio)  # numero de baias no navio
+    L = Navio[0].shape[0]  # numero de linhas no navio
+    C = Navio[0].shape[1]  # numero de colunas no navio
+
+    for b in range(B):
+        for l in range(L - 1, -1, -1):
+            for c in range(C - 1, -1, -1):
+                if Navio[b][l][c] != 0:
+                    Navio[b][l][c] = cont
+                    return Navio
+
+#-----------------------------------------------------------------#
+#-----------------------------------------------------------------#
+def Rc4(Navio,cont):  # por coluna, da direita para esquerda
+
+    B = len(Navio)  # numero de baias no navio
+    L = Navio[0].shape[0]  # numero de linhas no navio
+    C = Navio[0].shape[1]  # numero de colunas no navio
+
+    for b in range(B):
+        for c in range(C - 1, -1, -1):  # coluna, direita para esquerda
+            for l in range(L - 1, -1, -1):
+                if Navio[b][l][c] != 0:
+                    Navio[b][l][c] = cont
+                    return Navio
+
+#-----------------------------------------------------------------#
+#-----------------------------------------------------------------#
+def Rc5(Navio,cont): # Por linha, de baixo para cima, da esquerda para a direita, intercalando as baias
+
+    B = len(Navio)         # numero de baias no navio
+    L = Navio[0].shape[0]  # numero de linhas no navio
+    C = Navio[0].shape[1]  # numero de colunas no navio
+
+    for l in range(L-1,-1,-1):
+        for c in range(C):
+            for b in range(B):
+                if Navio[b][l][c] != 0:
+                    Navio[b][l][c] = cont
+                    return Navio
+
+#-----------------------------------------------------------------#
+#-----------------------------------------------------------------#
+def Rc6(Navio,cont):   #Por coluna, de baixo para cima, da esquerda para a direita, intercalando as baias
+
+    B = len(Navio)         # numero de baias no navio
+    L = Navio[0].shape[0]  # numero de linhas no navio
+    C = Navio[0].shape[1]  # numero de colunas no navio
+
+    for c in range(C):
+        for l in range(L-1,-1,-1):
+            for b in range(B):
+                if Navio[b][l][c] != 0:
+                    Navio[b][l][c] = cont
+                    return Navio
+
+#-----------------------------------------------------------------#
+#-----------------------------------------------------------------#
+def Rc7(Navio,cont): # por linha, da direita para a esquerda, intercalando as baias
+
+    B = len(Navio)  # numero de baias no navio
+    L = Navio[0].shape[0]  # numero de linhas no navio
+    C = Navio[0].shape[1]  # numero de colunas no navio
+
+    for l in range(L - 1, -1, -1):
+        for c in range(C - 1, -1, -1):
+            for b in range(B):
+                if Navio[b][l][c] != 0:
+                    Navio[b][l][c] = cont
+                    return Navio
+
+#-----------------------------------------------------------------#
+#-----------------------------------------------------------------#
+def Rc8(Navio,cont):  # por coluna, da direita para esquerda, intercalando as baias
+
+    B = len(Navio)  # numero de baias no navio
+    L = Navio[0].shape[0]  # numero de linhas no navio
+    C = Navio[0].shape[1]  # numero de colunas no navio
+
+    for c in range(C - 1, -1, -1):  # coluna, direita para esquerda
+        for l in range(L - 1, -1, -1):
+            for b in range(B):
+                if Navio[b][l][c] != 0:
+                    Navio[b][l][c] = cont
+                    return Navio
+
+#-----------------------------------------------------------------#
+#-----------------------------------------------------------------#
+
+
+
+
+
+
+
+
+
 
 
 
 if __name__ == '__main__':
 
-    # data = loadmat('InstanciaModeloIntegrado_1.mat')
-    # Patios = data['Patios'].tolist()
-    # Patio = Patios[0][0]
+
+     data = loadmat('Instancia3D-1-Tipo-1-Ocupacao-1.mat')
+     #Patios = data['Patios'].tolist()
+     #Patio = Patios[0][0]
+     Navio = data['Navio'].tolist()
+     Navio = Navio[0]
+
    # Patio = np.array([[0, 0, 5], [6, 0, 4], [7, 0, 3], [8, 2, 1]])
    # _ = Rr1(Patio)
    # Patio = np.array([[0, 0, 5], [6, 0, 4], [7, 0, 3], [8, 2, 1]])
@@ -719,5 +861,7 @@ if __name__ == '__main__':
    # _ = Rr9(Patio)
    # Patio = np.array([[0, 0, 5], [6, 0, 4], [7, 0, 3], [8, 2, 1]])
    # _ = Rr10(Patio)
+
+
 
 

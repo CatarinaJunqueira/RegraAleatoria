@@ -11,9 +11,9 @@ def SimulaRegras(porto, Patio, Navio, porto_dict, Rr, Rc, Rd):
         Navio, N_Rem = eval(Rr)(Patio, Navio, porto_dict, Rc)
         MovGeral += N_Rem
     else:
-        if porto in porto_dict.values():
+        if porto + 1 in porto_dict.values():
             # verificar se ha conteineres para serem desembarcados neste porto. Se nao houver, ir direto para o carregamento
-            Navio, N_Rem = eval(Rd)(Navio, porto_dict, porto, Rr, Rc)
+            Navio, N_Rem = eval(Rd)(Navio, porto_dict, porto + 1, Rr, Rc)
             MovGeral += N_Rem
             Navio, N_Rem = eval(Rr)(Patio, Navio, porto_dict, Rc)
             MovGeral += N_Rem
@@ -887,17 +887,14 @@ def Rc8(Navio, cont, _):  # por coluna, da direita para esquerda, intercalando a
 # -----------------------------------------------------------------#
 
 def Rc9(Navio, cont, porto_dict):  # This rule fills the ship matrix through a stack score based on the removal priority
-    print(Navio[0])
     B = len(Navio)  # numero de baias no navio
     L = Navio[0].shape[0]  # numero de linhas no navio
     C = Navio[0].shape[1]  # numero de colunas no navio
 
-    if cont == 6:
-        print('a')
     for b in range(B):
         if np.count_nonzero(Navio[b]) == 0:
             # se a baia estah inteira vazia, colocar na primeira posicao
-            Navio[0][L-1][0] = cont
+            Navio[b][L-1][0] = cont
             return Navio
         if np.count_nonzero(Navio[b]) < L*C:
             prioridades = np.zeros((1,C)).astype(int)
@@ -940,212 +937,81 @@ def Rc9(Navio, cont, porto_dict):  # This rule fills the ship matrix through a s
 
     return Navio
 
-
 # -----------------------------------------------------------------#
 # -----------------------------------------------------------------#
-def Rc10(Navio, cont, _):  # Por coluna, de baixo para cima, da esquerda para a direita + a stack score
 
+def Rc10(Navio, cont, porto_dict):  # This rule fills the ship matrix through a stack score based on the removal priority
     B = len(Navio)  # numero de baias no navio
     L = Navio[0].shape[0]  # numero de linhas no navio
     C = Navio[0].shape[1]  # numero de colunas no navio
-    flag = 0
 
     for b in range(B):
-        for c in range(C):
-            for l in range(L - 1, -1, -1):
-                if Navio[b][l][c] != 0:
-                    if flag == 0:
-                        b_aux = b
-                        l_aux = l
-                        c_aux = c
-                        flag = 1
-                    if l < L:  # se nao estah no chao
-                        p = np.min(Navio[:, c][np.nonzero(Navio[:, c])])
-                        if p >= c:
-                            Navio[b][l][c] = cont
-                            return Navio
-                    # Se nao encontrar nenhuma posicao disponivel, colocar na primeira que encontrar
-                Navio[b_aux][l_aux][c_aux] = cont
+        if np.count_nonzero(Navio[b]) == 0:
+            # se a baia estah inteira vazia, colocar na primeira posicao
+            Navio[b][L-1][0] = cont
+            return Navio
+        if np.count_nonzero(Navio[b]) < L*C:
+            prioridades = np.zeros((1,C)).astype(int)
+            Navio_aux = np.zeros((L,C)).astype(int)
+            for c in range(C):
+                for l in range(L):
+                    if Navio[b][l][c] != 0:
+                        Navio_aux[l][c] = porto_dict[Navio[b][l][c]]
+                nonzero = np.count_nonzero(Navio_aux[:, c])
+                if nonzero != 0 and nonzero < L:
+                    prioridades[0, c] = np.min(Navio_aux[:, c][np.nonzero(Navio_aux[:, c])])
+                if nonzero == 0:
+                    prioridades[0, c] = max(porto_dict.values()) + 1
+
+            temp = prioridades[prioridades >= porto_dict[cont]]
+            _, col = np.where(prioridades >= porto_dict[cont])
+            if len(temp) == 0:  # caso em que nenhuma das prioridades eh maior do que c. Escolher a menos pior.
+                if len(prioridades[prioridades > 0]):
+                    prioridades = prioridades[prioridades > 0]
+                    _, jj = np.where(Navio_aux == min(prioridades))
+                else:
+                    if b < B:
+                        continue
+                    else:
+                        _, jj = np.where(Navio_aux == max(max(prioridades)))
+                if len(jj) > 1:
+                    jj = jj[0]
+                ii = np.nonzero(Navio_aux[:, int(jj)])[0]
+                Navio[b][ii[0] - 1][jj] = cont  # mover
                 return Navio
-
-
-# -----------------------------------------------------------------#
-# -----------------------------------------------------------------#
-def Rc11(Navio, cont, _):  # por linha, da direita para a esquerda + a stack score
-
-    B = len(Navio)  # numero de baias no navio
-    L = Navio[0].shape[0]  # numero de linhas no navio
-    C = Navio[0].shape[1]  # numero de colunas no navio
-    flag = 0
-
-    for b in range(B):
-        for l in range(L - 1, -1, -1):
-            for c in range(C - 1, -1, -1):
-                if Navio[b][l][c] != 0:
-                    if flag == 0:
-                        b_aux = b
-                        l_aux = l
-                        c_aux = c
-                        flag = 1
-                    if l < L:  # se nao estah no chao
-                        p = np.min(Navio[:, c][np.nonzero(Navio[:, c])])
-                        if p >= c:
-                            Navio[b][l][c] = cont
-                            return Navio
-                    # Se nao encontrar nenhuma posicao disponivel, colocar na primeira que encontrar
-                Navio[b_aux][l_aux][c_aux] = cont
-                return Navio
-
-
-# -----------------------------------------------------------------#
-# -----------------------------------------------------------------#
-def Rc12(Navio, cont, _):  # por coluna, da direita para esquerda + a stack score
-
-    B = len(Navio)  # numero de baias no navio
-    L = Navio[0].shape[0]  # numero de linhas no navio
-    C = Navio[0].shape[1]  # numero de colunas no navio
-    flag = 0
-
-    for b in range(B):
-        for c in range(C - 1, -1, -1):  # coluna, direita para esquerda
-            for l in range(L - 1, -1, -1):
-                if Navio[b][l][c] != 0:
-                    if flag == 0:
-                        b_aux = b
-                        l_aux = l
-                        c_aux = c
-                        flag = 1
-                    if l < L:  # se nao estah no chao
-                        p = np.min(Navio[:, c][np.nonzero(Navio[:, c])])
-                        if p >= c:
-                            Navio[b][l][c] = cont
-                            return Navio
-                    # Se nao encontrar nenhuma posicao disponivel, colocar na primeira que encontrar
-                Navio[b_aux][l_aux][c_aux] = cont
-                return Navio
-
-
-# -----------------------------------------------------------------#
-# -----------------------------------------------------------------#
-def Rc13(Navio, cont, _):  # Por linha, de baixo para cima, da esquerda para a direita, intercalando as baias + a stack score
-
-    B = len(Navio)  # numero de baias no navio
-    L = Navio[0].shape[0]  # numero de linhas no navio
-    C = Navio[0].shape[1]  # numero de colunas no navio
-    flag = 0
-
-    for l in range(L - 1, -1, -1):
-        for c in range(C):
-            for b in range(B):
-                if Navio[b][l][c] != 0:
-                    if flag == 0:
-                        b_aux = b
-                        l_aux = l
-                        c_aux = c
-                        flag = 1
-                    if l < L:  # se nao estah no chao
-                        p = np.min(Navio[:, c][np.nonzero(Navio[:, c])])
-                        if p >= c:
-                            Navio[b][l][c] = cont
-                            return Navio
-                    # Se nao encontrar nenhuma posicao disponivel, colocar na primeira que encontrar
-                Navio[b_aux][l_aux][c_aux] = cont
-                return Navio
-
-
-# -----------------------------------------------------------------#
-# -----------------------------------------------------------------#
-def Rc14(Navio, cont, _):  # Por coluna, de baixo para cima, da esquerda para a direita, intercalando as baias + a stack score
-
-    B = len(Navio)  # numero de baias no navio
-    L = Navio[0].shape[0]  # numero de linhas no navio
-    C = Navio[0].shape[1]  # numero de colunas no navio
-    flag = 0
-
-    for c in range(C):
-        for l in range(L - 1, -1, -1):
-            for b in range(B):
-                if Navio[b][l][c] != 0:
-                    if flag == 0:
-                        b_aux = b
-                        l_aux = l
-                        c_aux = c
-                        flag = 1
-                    if l < L:  # se nao estah no chao
-                        p = np.min(Navio[:, c][np.nonzero(Navio[:, c])])
-                        if p >= c:
-                            Navio[b][l][c] = cont
-                            return Navio
-                    # Se nao encontrar nenhuma posicao disponivel, colocar na primeira que encontrar
-                Navio[b_aux][l_aux][c_aux] = cont
-                return Navio
-
-
-# -----------------------------------------------------------------#
-# -----------------------------------------------------------------#
-def Rc15(Navio, cont, _):  # por linha, da direita para a esquerda, intercalando as baias + a stack score
-
-    B = len(Navio)  # numero de baias no navio
-    L = Navio[0].shape[0]  # numero de linhas no navio
-    C = Navio[0].shape[1]  # numero de colunas no navio
-    flag = 0
-
-    for l in range(L - 1, -1, -1):
-        for c in range(C - 1, -1, -1):
-            for b in range(B):
-                if Navio[b][l][c] != 0:
-                    if flag == 0:
-                        b_aux = b
-                        l_aux = l
-                        c_aux = c
-                        flag = 1
-                    if l < L:  # se nao estah no chao
-                        p = np.min(Navio[:, c][np.nonzero(Navio[:, c])])
-                        if p >= c:
-                            Navio[b][l][c] = cont
-                            return Navio
-                    # Se nao encontrar nenhuma posicao disponivel, colocar na primeira que encontrar
-                Navio[b_aux][l_aux][c_aux] = cont
-                return Navio
-
-
-# -----------------------------------------------------------------#
-# -----------------------------------------------------------------#
-def Rc16(Navio, cont, _):  # por coluna, da direita para esquerda, intercalando as baias + a stack score
-
-    B = len(Navio)  # numero de baias no navio
-    L = Navio[0].shape[0]  # numero de linhas no navio
-    C = Navio[0].shape[1]  # numero de colunas no navio
-    flag = 0
-
-    for c in range(C - 1, -1, -1):  # coluna, direita para esquerda
-        for l in range(L - 1, -1, -1):
-            for b in range(B):
-                if Navio[b][l][c] != 0:
-                    if l < L:  # se nao estah no chao
-                        p = np.min(Navio[:, c][np.nonzero(Navio[:, c])])
-                        if p >= c:
-                            Navio[b][l][c] = cont
+            else:  # se satisfeita a condição, então colocar c nessa coluna não vai gerar nenhum movimento adicional.
+                _, jj = np.where(Navio_aux == min(temp))
+                if len(jj) == 0:
+                    Aux = np.count_nonzero(Navio[b], axis=0)
+                    for n in range(C):
+                        if Aux[n] == 0:
+                            jj = n
+                            ii = L - 1  # linha da base
+                            Navio[b][ii][jj] = cont
                             return Navio
                 else:
-                    Navio[b][l][c] = cont
+                    if len(col) > 1:
+                        col = col[0]
+                    ii = np.nonzero(Navio_aux[:, int(col)])[0]
+                    Navio[b][ii[0] - 1][col] = cont
                     return Navio
 
+    return Navio
+
 
 # -----------------------------------------------------------------#
 # -----------------------------------------------------------------#
 
-def Rc17(Navio, cont, _):  # Verificando qual eh a menor coluna, por baia.
+def Rc11(Navio, cont, _):  # Verificando qual eh a menor coluna, por baia.
 
     B = len(Navio)  # numero de baias no navio
     L = Navio[0].shape[0]  # numero de linhas no navio
     C = Navio[0].shape[1]  # numero de colunas no navio
 
     for b in range(B):
-        # if np.count_nonzero(Navio[b]) < L*C:
-        Aux = np.count_nonzero(Navio[b], axis=0)
-        # Se ainda tem posicao disponivel na baia t para alocar o conteiner, entao coloque nesta baia:
-        if Aux.sum() < L*C:
+        if np.count_nonzero(Navio[b]) < L*C:
+            # Se ainda tem posicao disponivel na baia t para alocar o conteiner, entao coloque nesta baia:
+            Aux = np.count_nonzero(Navio[b], axis=0)
             jj = np.argmin(Aux)  # coluna do menor valor em Aux # Only the first occurrence is returned.
             Navio[b][L - Aux[jj] - 1][jj] = cont
             return Navio
@@ -1153,18 +1019,193 @@ def Rc17(Navio, cont, _):  # Verificando qual eh a menor coluna, por baia.
 
 # -----------------------------------------------------------------#
 # -----------------------------------------------------------------#
-#def Rc18(Navio, cont):  # Por linha, de baixo para cima, da esquerda para a direita, intercalando as baias, verificando qual eh a menor coluna
-
-    # B = len(Navio)  # numero de baias no navio
-    # L = Navio[0].shape[0]  # numero de linhas no navio
-    # C = Navio[0].shape[1]  # numero de colunas no navio
-    #
-    # for l in range(L - 1, -1, -1):
-    #     for c in range(C):
-    #         for b in range(B):
-    #             if Navio[b][l][c] != 0:
-    #                 Navio[b][l][c] = cont
-    #                 return Navio
+# def Rc10(Navio, cont, _):  # Por coluna, de baixo para cima, da esquerda para a direita + a stack score
+#
+#     B = len(Navio)  # numero de baias no navio
+#     L = Navio[0].shape[0]  # numero de linhas no navio
+#     C = Navio[0].shape[1]  # numero de colunas no navio
+#     flag = 0
+#
+#     for b in range(B):
+#         for c in range(C):
+#             for l in range(L - 1, -1, -1):
+#                 if Navio[b][l][c] != 0:
+#                     if flag == 0:
+#                         b_aux = b
+#                         l_aux = l
+#                         c_aux = c
+#                         flag = 1
+#                     if l < L:  # se nao estah no chao
+#                         p = np.min(Navio[:, c][np.nonzero(Navio[:, c])])
+#                         if p >= c:
+#                             Navio[b][l][c] = cont
+#                             return Navio
+#                     # Se nao encontrar nenhuma posicao disponivel, colocar na primeira que encontrar
+#                 Navio[b_aux][l_aux][c_aux] = cont
+#                 return Navio
+#
+#
+# # -----------------------------------------------------------------#
+# # -----------------------------------------------------------------#
+# def Rc11(Navio, cont, _):  # por linha, da direita para a esquerda + a stack score
+#
+#     B = len(Navio)  # numero de baias no navio
+#     L = Navio[0].shape[0]  # numero de linhas no navio
+#     C = Navio[0].shape[1]  # numero de colunas no navio
+#     flag = 0
+#
+#     for b in range(B):
+#         for l in range(L - 1, -1, -1):
+#             for c in range(C - 1, -1, -1):
+#                 if Navio[b][l][c] != 0:
+#                     if flag == 0:
+#                         b_aux = b
+#                         l_aux = l
+#                         c_aux = c
+#                         flag = 1
+#                     if l < L:  # se nao estah no chao
+#                         p = np.min(Navio[:, c][np.nonzero(Navio[:, c])])
+#                         if p >= c:
+#                             Navio[b][l][c] = cont
+#                             return Navio
+#                     # Se nao encontrar nenhuma posicao disponivel, colocar na primeira que encontrar
+#                 Navio[b_aux][l_aux][c_aux] = cont
+#                 return Navio
+#
+#
+# # -----------------------------------------------------------------#
+# # -----------------------------------------------------------------#
+# def Rc12(Navio, cont, _):  # por coluna, da direita para esquerda + a stack score
+#
+#     B = len(Navio)  # numero de baias no navio
+#     L = Navio[0].shape[0]  # numero de linhas no navio
+#     C = Navio[0].shape[1]  # numero de colunas no navio
+#     flag = 0
+#
+#     for b in range(B):
+#         for c in range(C - 1, -1, -1):  # coluna, direita para esquerda
+#             for l in range(L - 1, -1, -1):
+#                 if Navio[b][l][c] != 0:
+#                     if flag == 0:
+#                         b_aux = b
+#                         l_aux = l
+#                         c_aux = c
+#                         flag = 1
+#                     if l < L:  # se nao estah no chao
+#                         p = np.min(Navio[:, c][np.nonzero(Navio[:, c])])
+#                         if p >= c:
+#                             Navio[b][l][c] = cont
+#                             return Navio
+#                     # Se nao encontrar nenhuma posicao disponivel, colocar na primeira que encontrar
+#                 Navio[b_aux][l_aux][c_aux] = cont
+#                 return Navio
+#
+#
+# # -----------------------------------------------------------------#
+# # -----------------------------------------------------------------#
+# def Rc13(Navio, cont, _):  # Por linha, de baixo para cima, da esquerda para a direita, intercalando as baias + a stack score
+#
+#     B = len(Navio)  # numero de baias no navio
+#     L = Navio[0].shape[0]  # numero de linhas no navio
+#     C = Navio[0].shape[1]  # numero de colunas no navio
+#     flag = 0
+#
+#     for l in range(L - 1, -1, -1):
+#         for c in range(C):
+#             for b in range(B):
+#                 if Navio[b][l][c] != 0:
+#                     if flag == 0:
+#                         b_aux = b
+#                         l_aux = l
+#                         c_aux = c
+#                         flag = 1
+#                     if l < L:  # se nao estah no chao
+#                         p = np.min(Navio[:, c][np.nonzero(Navio[:, c])])
+#                         if p >= c:
+#                             Navio[b][l][c] = cont
+#                             return Navio
+#                     # Se nao encontrar nenhuma posicao disponivel, colocar na primeira que encontrar
+#                 Navio[b_aux][l_aux][c_aux] = cont
+#                 return Navio
+#
+#
+# # -----------------------------------------------------------------#
+# # -----------------------------------------------------------------#
+# def Rc14(Navio, cont, _):  # Por coluna, de baixo para cima, da esquerda para a direita, intercalando as baias + a stack score
+#
+#     B = len(Navio)  # numero de baias no navio
+#     L = Navio[0].shape[0]  # numero de linhas no navio
+#     C = Navio[0].shape[1]  # numero de colunas no navio
+#     flag = 0
+#
+#     for c in range(C):
+#         for l in range(L - 1, -1, -1):
+#             for b in range(B):
+#                 if Navio[b][l][c] != 0:
+#                     if flag == 0:
+#                         b_aux = b
+#                         l_aux = l
+#                         c_aux = c
+#                         flag = 1
+#                     if l < L:  # se nao estah no chao
+#                         p = np.min(Navio[:, c][np.nonzero(Navio[:, c])])
+#                         if p >= c:
+#                             Navio[b][l][c] = cont
+#                             return Navio
+#                     # Se nao encontrar nenhuma posicao disponivel, colocar na primeira que encontrar
+#                 Navio[b_aux][l_aux][c_aux] = cont
+#                 return Navio
+#
+#
+# # -----------------------------------------------------------------#
+# # -----------------------------------------------------------------#
+# def Rc15(Navio, cont, _):  # por linha, da direita para a esquerda, intercalando as baias + a stack score
+#
+#     B = len(Navio)  # numero de baias no navio
+#     L = Navio[0].shape[0]  # numero de linhas no navio
+#     C = Navio[0].shape[1]  # numero de colunas no navio
+#     flag = 0
+#
+#     for l in range(L - 1, -1, -1):
+#         for c in range(C - 1, -1, -1):
+#             for b in range(B):
+#                 if Navio[b][l][c] != 0:
+#                     if flag == 0:
+#                         b_aux = b
+#                         l_aux = l
+#                         c_aux = c
+#                         flag = 1
+#                     if l < L:  # se nao estah no chao
+#                         p = np.min(Navio[:, c][np.nonzero(Navio[:, c])])
+#                         if p >= c:
+#                             Navio[b][l][c] = cont
+#                             return Navio
+#                     # Se nao encontrar nenhuma posicao disponivel, colocar na primeira que encontrar
+#                 Navio[b_aux][l_aux][c_aux] = cont
+#                 return Navio
+#
+#
+# # -----------------------------------------------------------------#
+# # -----------------------------------------------------------------#
+# def Rc16(Navio, cont, _):  # por coluna, da direita para esquerda, intercalando as baias + a stack score
+#
+#     B = len(Navio)  # numero de baias no navio
+#     L = Navio[0].shape[0]  # numero de linhas no navio
+#     C = Navio[0].shape[1]  # numero de colunas no navio
+#     flag = 0
+#
+#     for c in range(C - 1, -1, -1):  # coluna, direita para esquerda
+#         for l in range(L - 1, -1, -1):
+#             for b in range(B):
+#                 if Navio[b][l][c] != 0:
+#                     if l < L:  # se nao estah no chao
+#                         p = np.min(Navio[:, c][np.nonzero(Navio[:, c])])
+#                         if p >= c:
+#                             Navio[b][l][c] = cont
+#                             return Navio
+#                 else:
+#                     Navio[b][l][c] = cont
+#                     return Navio
 
 
 # ----------------------------------------------------------------- #
@@ -1204,7 +1245,7 @@ def Rd1(Navio, porto_dict, P, Rr, Rc):
         newrow = np.zeros((len(patio_transb))).astype(int)
         arr = np.array(patio_transb)
         patio_transb = np.vstack([newrow,arr])
-        Navio, num_rem = Rr(patio_transb, Navio, porto_dict, Rc)
+        Navio, num_rem = eval(Rr)(patio_transb, Navio, porto_dict, Rc)
         N_Rem += num_rem
 
     return Navio, N_Rem
@@ -1235,7 +1276,7 @@ def Rd2(Navio, porto_dict, P, Rr, Rc):
         newrow = np.zeros((len(patio_transb))).astype(int)
         arr = np.array(patio_transb)
         patio_transb = np.vstack([newrow,arr])
-        Navio, num_rem = Rr(patio_transb, Navio, porto_dict, Rc)
+        Navio, num_rem = eval(Rr)(patio_transb, Navio, porto_dict, Rc)
         N_Rem += num_rem
 
     return Navio, N_Rem
@@ -1309,7 +1350,7 @@ def Rd3(Navio, porto_dict, porto_atual, Rr, Rc):
         newrow = np.zeros((len(patio_transb))).astype(int)
         arr = np.array(patio_transb)
         patio_transb = np.vstack([newrow,arr])
-        Navio, num_rem = Rr(patio_transb, Navio, porto_dict, Rc)
+        Navio, num_rem = eval(Rr)(patio_transb, Navio, porto_dict, Rc)
         N_Rem += num_rem
 
     return Navio, N_Rem

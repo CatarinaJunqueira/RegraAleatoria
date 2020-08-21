@@ -23,7 +23,7 @@ def NumToRules(regra_gene, NRr, NRc, NRd):
                 if counter == regra_gene:
                     Rr = 'Rr' + str(i + 1)
                     Rc = 'Rc' + str(j + 1)
-                    Rd = 'Rr' + str(k + 1)
+                    Rd = 'Rd' + str(k + 1)
                     return Rr, Rc, Rd
                 else:
                     counter += 1
@@ -46,8 +46,8 @@ class Individuo:
         fitness = 0
         for i in range(len(self.cromossomo)):
             Rr, Rc, Rd = NumToRules(self.cromossomo[i], NRr, NRc, NRd)
-            Rc='Rc9'
-            Rr = 'Rr1'
+            #Rc='Rc10'
+            #Rr = 'Rr1'
             num_movimentos_total = SimulaRegras(i, patios[i], navio, porto_dict, Rr, Rc, Rd)
             fitness += num_movimentos_total
 
@@ -178,11 +178,11 @@ if __name__ == '__main__':
     taxa_mutacao = 0.01
     taxa_crossover = 0.8
     numero_geracoes = 100
-    lbound = 1
-    ubound = 510 # total de combinação de regras
     NRr = 10  # numero de regras de retirada do patio
-    NRc = 17  # numero de regras de carregamento
+    NRc = 11  # numero de regras de carregamento
     NRd = 3   # numero de regras de descarregamento
+    lbound = 1
+    ubound = NRc*NRr*NRd  # total de combinação de regras
     ag = AlgoritmoGenetico(tamanho_populacao)
     resultado = ag.resolver(lbound, ubound, taxa_mutacao, numero_geracoes, patios, navio, porto_dict, Num_portos)
 

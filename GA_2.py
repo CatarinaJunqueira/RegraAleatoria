@@ -46,8 +46,8 @@ class Individuo:
         fitness = 0
         for i in range(len(self.cromossomo)):
             Rr, Rc, Rd = NumToRules(self.cromossomo[i], NRr, NRc, NRd)
-            #Rc='Rc10'
-            #Rr = 'Rr1'
+            #Rc='Rc2'
+            #Rr = 'Rr8'
             num_movimentos_total = SimulaRegras(i, patios[i], navio, porto_dict, Rr, Rc, Rd)
             fitness += num_movimentos_total
 
@@ -92,7 +92,7 @@ class AlgoritmoGenetico:
     def ordena_populacao(self):
         # ordenar do individuo com o menor para o maior numero total de movimentos
         self.populacao = sorted(self.populacao,
-                                key=lambda populacao: populacao.num_movimentos,
+                                key=lambda populacao: populacao.fitness,
                                 reverse=False)
 
     def melhor_individuo(self, individuo):
@@ -102,7 +102,7 @@ class AlgoritmoGenetico:
     def soma_avaliacoes(self):
         soma = 0
         for individuo in self.populacao:
-            soma += individuo.num_movimentos
+            soma += individuo.fitness
         return soma
 
     def seleciona_pai(self, soma_avaliacao):
@@ -111,7 +111,7 @@ class AlgoritmoGenetico:
         soma = 0
         i = 0
         while i < len(self.populacao) and soma < valor_sorteado:
-            soma += self.populacao[i].num_movimentos
+            soma += self.populacao[i].fitness
             pai += 1
             i += 1
         return pai
@@ -119,7 +119,7 @@ class AlgoritmoGenetico:
     def visualiza_geracao(self):
         melhor = self.populacao[0]
         print("Geração: %s -> Numero de Movimentos: %s Regra: %s" % (self.populacao[0].geracao,
-                                                                     melhor.num_movimentos,
+                                                                     melhor.fitness,
                                                                      melhor.cromossomo))
 
     def resolver(self, lbound, ubound, taxa_mutacao, numero_geracoes, patios, navio, porto_dict, Num_portos):
@@ -130,7 +130,7 @@ class AlgoritmoGenetico:
 
         self.ordena_populacao()   # ordenar a populacao por numero de movimentos de cada individuo
         self.melhor_solucao = self.populacao[0]
-        self.lista_solucoes.append(self.melhor_solucao.nota_avaliacao)
+        self.lista_solucoes.append(self.melhor_solucao.fitness)
 
         self.visualiza_geracao()
 
@@ -178,7 +178,7 @@ if __name__ == '__main__':
     taxa_mutacao = 0.01
     taxa_crossover = 0.8
     numero_geracoes = 100
-    NRr = 10  # numero de regras de retirada do patio
+    NRr = 7  # numero de regras de retirada do patio
     NRc = 11  # numero de regras de carregamento
     NRd = 3   # numero de regras de descarregamento
     lbound = 1

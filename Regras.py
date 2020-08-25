@@ -15,8 +15,10 @@ def SimulaRegras(porto, Patio, Navio, porto_dict, Rr, Rc, Rd):
             # verificar se ha conteineres para serem desembarcados neste porto. Se nao houver, ir direto para o carregamento
             Navio, N_Rem = eval(Rd)(Navio, porto_dict, porto + 1, Rr, Rc)
             MovGeral += N_Rem
+
             Navio, N_Rem = eval(Rr)(Patio, Navio, porto_dict, Rc)
             MovGeral += N_Rem
+
         else:
             Navio, N_Rem = eval(Rr)(Patio, Navio, porto_dict, Rc)
             MovGeral += N_Rem
@@ -103,7 +105,6 @@ def Rr2(Patio, Navio, porto_dict, Rc):  # Por coluna, de baixo para cima, da esq
             Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
             Patio[i][j] = 0  # remover o conteiner do patio
             # carregar no navio
-    print(N_Rem)
 
     return Navio, N_Rem  # , Navio
 
@@ -146,7 +147,6 @@ def Rr3(Patio, Navio, porto_dict, Rc):  # por linha, da direita para a esquerda
             Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
             Patio[i][j] = 0  # remover o conteiner do patio
             # carregar no navio
-    print(N_Rem)
 
     return Navio, N_Rem  # , Navio
 
@@ -239,7 +239,6 @@ def Rr5(Patio, Navio, porto_dict, Rc):  # Por linha, intercalando as linhas
             Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
             Patio[i][j] = 0  # remover o conteiner do patio
             # carregar no navio
-    print(N_Rem)
 
     return Navio, N_Rem  # , Navio
 
@@ -290,7 +289,6 @@ def Rr6(Patio, Navio, porto_dict, Rc):  # Por linha, intercalando as linhas, 2
             Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
             Patio[i][j] = 0  # remover o conteiner do patio
             # carregar no navio
-    print(N_Rem)
 
     return Navio, N_Rem  # , Navio
 
@@ -358,7 +356,6 @@ def Rr7(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna
 
             # carregar no navio
 
-    print(N_Rem)
 
     return Navio, N_Rem  # , Navio
 
@@ -376,7 +373,9 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
     c_aux = -1
     N_Rem_aux = 0
 
+
     for c in conteineres:
+        flag = 1
         i, j = np.where(Patio == c)  # localizando posicao do conteiner a ser retirado
         i = int(i)
         j = int(j)
@@ -388,12 +387,13 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
 
         else:  # caso contrário...
             if c_aux + 1 == c:  # verificando se o remanejamento anterior gerou um remanejamento na retirada seguinte...
+                flag = 0
                 i2, j2 = np.where(Patio == c)  # localizando posicao do conteiner a ser retirado
                 i2 = int(i2)
                 j2 = int(j2)
-                index_mover_aux2 = np.nonzero(Patio[:i2, j2])[
-                    0]  # salvando quantos conteineres tem acima do conteiner seguinte a sair
+                index_mover_aux2 = np.nonzero(Patio[:i2, j2])[0]  # salvando quantos conteineres tem acima do conteiner seguinte a sair
                 if len(index_mover_aux2) > len(index_mover_aux):
+                    flag = 0
                     # c_aux = c       # remanejar primeiro o conteiner seguinte a sair
                     # c = c-1
                     Patio = aux.copy()
@@ -478,8 +478,7 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
                     i, j = np.where(Patio == c - 1)  # localizando posicao do conteiner a ser retirado
                     i = int(i)
                     j = int(j)
-                    index_mover = np.nonzero(Patio[:i, j])[
-                        0]  # identificar as linhas que tem conteineres acima bloqueando.
+                    index_mover = np.nonzero(Patio[:i, j])[0]  # identificar as linhas que tem conteineres acima bloqueando.
                     for c_rmj in range(len(index_mover)):  # de 1 ateh a qntd de conteineres que devem ser remanejados
                         # buscar um local vazio:
                         prioridades = np.zeros((1, C))
@@ -529,8 +528,7 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
                         # carregar no navio
 
                     else:  # caso contrário...
-                        index_mover = np.nonzero(Patio[:i, j])[
-                            0]  # identificar as linhas que tem conteineres acima bloqueando.
+                        index_mover = np.nonzero(Patio[:i, j])[0]  # identificar as linhas que tem conteineres acima bloqueando.
                         for c_rmj in range(
                                 len(index_mover)):  # de 1 ateh a qntd de conteineres que devem ser remanejados
                             # buscar um local vazio:
@@ -545,8 +543,7 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
                                             prioridades[0, n] = np.min(Patio[:, n][np.nonzero(Patio[:, n])])
 
                             temp = prioridades[prioridades > Patio[index_mover[c_rmj]][j]]
-                            if len(
-                                    temp) == 0:  # caso em que nenhuma das prioridades eh maior do que c. Escolher a menos pior.
+                            if len(temp) == 0:  # caso em que nenhuma das prioridades eh maior do que c. Escolher a menos pior.
                                 _, jj = np.where(Patio == max(max(prioridades)))
                                 ii = np.nonzero(Patio[:, int(jj)])[0]
                                 Patio[ii[0] - 1][jj] = Patio[index_mover[c_rmj]][j]  # mover
@@ -571,14 +568,15 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
                         Patio[i][j] = 0  # remover o conteiner do patio
                     # --------------------------------------------------------------------------------------------------#
                     # --------------------------------------------------------------------------------------------------#
-            else:  # se o remanejamento anterior nao gerou um remanejamento na retirada seguinte...
-
+                else:
+                    flag = 1
+            if flag == 1:  # se o remanejamento anterior nao gerou um remanejamento na retirada seguinte...
+                flag = 0
                 # --------------------------------------------#
                 i2, j2 = np.where(Patio == c + 1)  # localizando posicao do proximo conteiner a ser retirado
                 i2 = int(i2)
                 j2 = int(j2)
-                index_mover_aux = np.nonzero(Patio[:i2, j2])[
-                    0]  # salvando quantos conteineres tem acima do conteiner seguinte a sair
+                index_mover_aux = np.nonzero(Patio[:i2, j2])[0]  # salvando quantos conteineres tem acima do conteiner seguinte a sair
                 c_aux = c
                 aux = Patio.copy()
                 # --------------------------------------------#
@@ -666,7 +664,6 @@ def Rr9(Patio, Navio, porto_dict, Rc):  # Regra da menor coluna
             Patio[i][j] = 0  # remover o conteiner do patio
             # carregar no navio
 
-    print(N_Rem)
     return Navio, N_Rem  # , Navio
 
 
@@ -744,7 +741,6 @@ def Rr10(Patio, Navio, porto_dict, Rc):  # Regra da coluna mais próxima
             Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
             Patio[i][j] = 0  # remover o conteiner do patio
 
-    print(N_Rem)
     return Navio, N_Rem  # , Navio
 
 
@@ -763,9 +759,11 @@ def Rc1(Navio, cont, _):  # Por linha, de baixo para cima, da esquerda para a di
         if np.count_nonzero(Navio[b]) < L * C:
             for l in range(L - 1, -1, -1):
                 for c in range(C):
-                    if Navio[b][l][c] != 0:
+                    if Navio[b][l][c] == 0:
                         Navio[b][l][c] = cont
                         return Navio
+
+    raise Exception('Erro na função de carregamento Rc1. Não há espaço para carregamento')
 
 
 # -----------------------------------------------------------------#
@@ -780,14 +778,15 @@ def Rc2(Navio, cont, _):  # Por coluna, de baixo para cima, da esquerda para a d
         if np.count_nonzero(Navio[b]) < L * C:
             for c in range(C):
                 for l in range(L - 1, -1, -1):
-                    if Navio[b][l][c] != 0:
+                    if Navio[b][l][c] == 0:
                         Navio[b][l][c] = cont
                         return Navio
 
+    raise Exception('Erro na função de carregamento Rc2. Não há espaço para carregamento')
 
 # -----------------------------------------------------------------#
 # -----------------------------------------------------------------#
-def Rc3(Navio, cont):  # por linha, da direita para a esquerda
+def Rc3(Navio, cont, _):  # por linha, da direita para a esquerda
 
     B = len(Navio)  # numero de baias no navio
     L = Navio[0].shape[0]  # numero de linhas no navio
@@ -797,10 +796,11 @@ def Rc3(Navio, cont):  # por linha, da direita para a esquerda
         if np.count_nonzero(Navio[b]) < L * C:
             for l in range(L - 1, -1, -1):
                 for c in range(C - 1, -1, -1):
-                    if Navio[b][l][c] != 0:
+                    if Navio[b][l][c] == 0:
                         Navio[b][l][c] = cont
                         return Navio
 
+    raise Exception('Erro na função de carregamento Rc3. Não há espaço para carregamento')
 
 # -----------------------------------------------------------------#
 # -----------------------------------------------------------------#
@@ -814,9 +814,11 @@ def Rc4(Navio, cont, _):  # por coluna, da direita para esquerda
         if np.count_nonzero(Navio[b]) < L * C:
             for c in range(C - 1, -1, -1):  # coluna, direita para esquerda
                 for l in range(L - 1, -1, -1):
-                    if Navio[b][l][c] != 0:
+                    if Navio[b][l][c] == 0:
                         Navio[b][l][c] = cont
                         return Navio
+
+    raise Exception('Erro na função de carregamento Rc4. Não há espaço para carregamento')
 
 
 # -----------------------------------------------------------------#
@@ -830,9 +832,11 @@ def Rc5(Navio, cont, _):  # Por linha, de baixo para cima, da esquerda para a di
     for l in range(L - 1, -1, -1):
         for c in range(C):
             for b in range(B):
-                if Navio[b][l][c] != 0:
+                if Navio[b][l][c] == 0:
                     Navio[b][l][c] = cont
                     return Navio
+
+    raise Exception('Erro na função de carregamento Rc5. Não há espaço para carregamento')
 
 
 # -----------------------------------------------------------------#
@@ -846,11 +850,11 @@ def Rc6(Navio, cont, _):  # Por coluna, de baixo para cima, da esquerda para a d
     for c in range(C):
         for l in range(L - 1, -1, -1):
             for b in range(B):
-                if Navio[b][l][c] != 0:
+                if Navio[b][l][c] == 0:
                     Navio[b][l][c] = cont
                     return Navio
 
-
+    raise Exception('Erro na função de carregamento Rc6. Não há espaço para carregamento')
 # -----------------------------------------------------------------#
 # -----------------------------------------------------------------#
 def Rc7(Navio, cont, _):  # por linha, da direita para a esquerda, intercalando as baias
@@ -862,10 +866,11 @@ def Rc7(Navio, cont, _):  # por linha, da direita para a esquerda, intercalando 
     for l in range(L - 1, -1, -1):
         for c in range(C - 1, -1, -1):
             for b in range(B):
-                if Navio[b][l][c] != 0:
+                if Navio[b][l][c] == 0:
                     Navio[b][l][c] = cont
                     return Navio
 
+    raise Exception('Erro na função de carregamento Rc7. Não há espaço para carregamento')
 
 # -----------------------------------------------------------------#
 # -----------------------------------------------------------------#
@@ -878,9 +883,11 @@ def Rc8(Navio, cont, _):  # por coluna, da direita para esquerda, intercalando a
     for c in range(C - 1, -1, -1):  # coluna, direita para esquerda
         for l in range(L - 1, -1, -1):
             for b in range(B):
-                if Navio[b][l][c] != 0:
+                if Navio[b][l][c] == 0:
                     Navio[b][l][c] = cont
                     return Navio
+
+    raise Exception('Erro na função de carregamento Rc8. Não há espaço para carregamento')
 
 
 # -----------------------------------------------------------------#
@@ -1225,21 +1232,21 @@ def Rd1(Navio, porto_dict, P, Rr, Rc):
     N_Rem = 0
 
     for b in range(B):  # baia
-        for l in range(L):  # linha
-            for c in range(C):  # coluna
-                if Navio[b][l][c] != 0 and porto_dict[Navio[b][l][c]] == P:  # se nessa posicao tem um conteiner que vai descer
-                    if l != 0:  # se nao estah no topo da coluna, verificar se tem algum conteiner acima bloqueando
-                        if Navio[b][l-1][c] != 0:
-                            index_mover = np.nonzero(Navio[b][:l, c])[0]  # identificar as linhas que tem conteineres acima bloqueando.
-                            for c_rmj in range(len(index_mover)):
-                                patio_transb.append(Navio[b][index_mover[c_rmj]][c])
-                                Navio[b][index_mover[c_rmj]][c] = 0
-                                N_Rem += 1
-                        # depois de que nao houver mais nenhum conteiner bloqueando a saida, retirar o cont objetivo
-                        Navio[b][l][c] = 0
-                    else:
-                        Navio[b][l][c] = 0
-
+        if np.count_nonzero(Navio[b]) != 0:
+            for l in range(L):  # linha
+                for c in range(C):  # coluna
+                    if Navio[b][l][c] != 0 and porto_dict[Navio[b][l][c]] == P:  # se nessa posicao tem um conteiner que vai descer
+                        if l != 0:  # se nao estah no topo da coluna, verificar se tem algum conteiner acima bloqueando
+                            if Navio[b][l-1][c] != 0:
+                                index_mover = np.nonzero(Navio[b][:l, c])[0]  # identificar as linhas que tem conteineres acima bloqueando.
+                                for c_rmj in range(len(index_mover)):
+                                    patio_transb.append(Navio[b][index_mover[c_rmj]][c])
+                                    Navio[b][index_mover[c_rmj]][c] = 0
+                                    N_Rem += 1
+                            # depois de que nao houver mais nenhum conteiner bloqueando a saida, retirar o cont objetivo
+                            Navio[b][l][c] = 0
+                        else:
+                            Navio[b][l][c] = 0
 
     if len(patio_transb) != 0:
         newrow = np.zeros((len(patio_transb))).astype(int)
@@ -1262,15 +1269,16 @@ def Rd2(Navio, porto_dict, P, Rr, Rc):
     N_Rem = 0
 
     for b in range(B):  # baia
-        for l in range(L):  # linha
-            for c in range(C):  # coluna
-                if Navio[b][l][c] != 0:
-                    if porto_dict[Navio[b][l][c]] == P:  # se nessa posicao tem um conteiner que vai descer
-                        Navio[b][l][c] = 0
-                    else:
-                        patio_transb.append(Navio[b][l][c])
-                        Navio[b][l][c] = 0
-                        N_Rem += 1
+        if np.count_nonzero(Navio[b]) != 0:
+            for l in range(L):  # linha
+                for c in range(C):  # coluna
+                    if Navio[b][l][c] != 0:
+                        if porto_dict[Navio[b][l][c]] == P:  # se nessa posicao tem um conteiner que vai descer
+                            Navio[b][l][c] = 0
+                        else:
+                            patio_transb.append(Navio[b][l][c])
+                            Navio[b][l][c] = 0
+                            N_Rem += 1
 
     if len(patio_transb) != 0:
         newrow = np.zeros((len(patio_transb))).astype(int)
@@ -1342,6 +1350,8 @@ def Rd3(Navio, porto_dict, porto_atual, Rr, Rc):
                                                 break
 
                             # depois de que nao houver mais nenhum conteiner bloqueando a saida, retirar o cont objetivo
+                            Navio[b][l][c] = 0
+                        else:  # nao tem conteiner acima bloqueando
                             Navio[b][l][c] = 0
                     else:
                         Navio[b][l][c] = 0

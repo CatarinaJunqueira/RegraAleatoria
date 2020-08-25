@@ -1,4 +1,5 @@
 import random
+#from random import random
 import matplotlib.pyplot as plt
 from Regras import SimulaRegras
 from scipy.io import loadmat
@@ -34,6 +35,7 @@ class Individuo:
         self.fitness = 0
         self.lbound = lbound
         self.ubound = ubound
+        self.Num_portos = Num_portos
         self.geracao = geracao
         self.cromossomo = []
 
@@ -55,13 +57,13 @@ class Individuo:
 
 
     def crossover(self, outro_individuo):
-        corte = round(random() * len(self.cromossomo))
+        corte = round(random.random() * len(self.cromossomo))
 
         filho1 = outro_individuo.cromossomo[0:corte] + self.cromossomo[corte::]
         filho2 = self.cromossomo[0:corte] + outro_individuo.cromossomo[corte::]
 
-        filhos = [Individuo(self.espacos, self.valores, self.limite_espacos, self.geracao + 1),
-                  Individuo(self.espacos, self.valores, self.limite_espacos, self.geracao + 1)]
+        filhos = [Individuo(self.lbound, self.ubound, self.Num_portos, self.geracao + 1),
+                  Individuo(self.lbound, self.ubound, self.Num_portos, self.geracao + 1)]
         filhos[0].cromossomo = filho1
         filhos[1].cromossomo = filho2
         return filhos
@@ -69,7 +71,7 @@ class Individuo:
     def mutacao(self, taxa_mutacao):
         # print("Antes %s " % self.cromossomo)
         for i in range(len(self.cromossomo)):
-            if random() < taxa_mutacao:
+            if random.random() < taxa_mutacao:
                 random.randint(lbound, ubound)
 
         return self
@@ -96,7 +98,7 @@ class AlgoritmoGenetico:
                                 reverse=False)
 
     def melhor_individuo(self, individuo):
-        if individuo.nota_avaliacao > self.melhor_solucao.nota_avaliacao:
+        if individuo.fitness > self.melhor_solucao.fitness:
             self.melhor_solucao = individuo
 
     def soma_avaliacoes(self):
@@ -107,7 +109,7 @@ class AlgoritmoGenetico:
 
     def seleciona_pai(self, soma_avaliacao):
         pai = -1
-        valor_sorteado = random() * soma_avaliacao
+        valor_sorteado = random.random() * soma_avaliacao
         soma = 0
         i = 0
         while i < len(self.populacao) and soma < valor_sorteado:
@@ -150,20 +152,19 @@ class AlgoritmoGenetico:
             self.populacao = list(nova_populacao)
 
             for individuo in self.populacao:
-                individuo.avaliacao()
+                individuo.avaliacao(patios, navio, porto_dict)
 
             self.ordena_populacao()
 
             self.visualiza_geracao()
 
             melhor = self.populacao[0]
-            self.lista_solucoes.append(melhor.nota_avaliacao)
+            self.lista_solucoes.append(melhor.fitness)
             self.melhor_individuo(melhor)
 
-        print("\nMelhor solução -> G: %s Valor: %s Espaço: %s Cromossomo: %s" %
+        print("\nMelhor solução -> G: %s Valor: %s Cromossomo: %s" %
               (self.melhor_solucao.geracao,
-               self.melhor_solucao.nota_avaliacao,
-               self.melhor_solucao.espaco_usado,
+               self.melhor_solucao.fitness,
                self.melhor_solucao.cromossomo))
 
         return self.melhor_solucao.cromossomo
@@ -179,7 +180,7 @@ if __name__ == '__main__':
     taxa_crossover = 0.8
     numero_geracoes = 100
     NRr = 7  # numero de regras de retirada do patio
-    NRc = 11  # numero de regras de carregamento
+    NRc = 8  # numero de regras de carregamento
     NRd = 3   # numero de regras de descarregamento
     lbound = 1
     ubound = NRc*NRr*NRd  # total de combinação de regras

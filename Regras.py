@@ -4,8 +4,13 @@ import pandas as pd
 
 
 def SimulaRegras(porto, Patio, Navio, porto_dict, Rr, Rc, Rd):
-
+  #  print("Porto %s " % porto)
     MovGeral = 0
+
+   # print("\nRr -> G: %s Rc: %s Rd: %s" %
+   #       (Rr,
+   #        Rc,
+   #        Rd))
 
     if porto == 0:
         Navio, N_Rem = eval(Rr)(Patio, Navio, porto_dict, Rc)
@@ -15,15 +20,13 @@ def SimulaRegras(porto, Patio, Navio, porto_dict, Rr, Rc, Rd):
             # verificar se ha conteineres para serem desembarcados neste porto. Se nao houver, ir direto para o carregamento
             Navio, N_Rem = eval(Rd)(Navio, porto_dict, porto + 1, Rr, Rc)
             MovGeral += N_Rem
-
             Navio, N_Rem = eval(Rr)(Patio, Navio, porto_dict, Rc)
             MovGeral += N_Rem
-
         else:
             Navio, N_Rem = eval(Rr)(Patio, Navio, porto_dict, Rc)
             MovGeral += N_Rem
 
-    return MovGeral
+    return MovGeral, Navio
 
 
 def Rr1(Patio, Navio, porto_dict, Rc):  # Por linha, de baixo para cima, da esquerda para a direita
@@ -40,7 +43,7 @@ def Rr1(Patio, Navio, porto_dict, Rc):  # Por linha, de baixo para cima, da esqu
         j = int(j)
 
         if Patio[i - 1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0
             # carregar no navio
 
@@ -59,7 +62,7 @@ def Rr1(Patio, Navio, porto_dict, Rc):  # Por linha, de baixo para cima, da esqu
                             N_Rem += 1
                             flag = 1
                             break
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0  # remover o conteiner do patio
             # carregar no navio
 
@@ -83,7 +86,7 @@ def Rr2(Patio, Navio, porto_dict, Rc):  # Por coluna, de baixo para cima, da esq
         j = int(j)
 
         if Patio[i - 1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0
             # carregar no navio
 
@@ -102,7 +105,7 @@ def Rr2(Patio, Navio, porto_dict, Rc):  # Por coluna, de baixo para cima, da esq
                             N_Rem += 1
                             flag = 1
                             break
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0  # remover o conteiner do patio
             # carregar no navio
 
@@ -125,7 +128,7 @@ def Rr3(Patio, Navio, porto_dict, Rc):  # por linha, da direita para a esquerda
         j = int(j)
 
         if Patio[i - 1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0
             # carregar no navio
 
@@ -144,7 +147,7 @@ def Rr3(Patio, Navio, porto_dict, Rc):  # por linha, da direita para a esquerda
                             N_Rem += 1
                             flag = 1
                             break
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0  # remover o conteiner do patio
             # carregar no navio
 
@@ -167,7 +170,7 @@ def Rr4(Patio, Navio, porto_dict, Rc):  # por coluna, da direita para esquerda
         j = int(j)
 
         if Patio[i - 1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0
             # carregar no navio
 
@@ -186,7 +189,7 @@ def Rr4(Patio, Navio, porto_dict, Rc):  # por coluna, da direita para esquerda
                             N_Rem += 1
                             flag = 1
                             break
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0  # remover o conteiner do patio
             # carregar no navio
 
@@ -209,7 +212,7 @@ def Rr5(Patio, Navio, porto_dict, Rc):  # Por linha, intercalando as linhas
         j = int(j)
 
         if Patio[i - 1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0
             # carregar no navio
 
@@ -236,7 +239,7 @@ def Rr5(Patio, Navio, porto_dict, Rc):  # Por linha, intercalando as linhas
                             N_Rem += 1
                             flag = 1
                             break
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0  # remover o conteiner do patio
             # carregar no navio
 
@@ -259,7 +262,7 @@ def Rr6(Patio, Navio, porto_dict, Rc):  # Por linha, intercalando as linhas, 2
         j = int(j)
 
         if Patio[i - 1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0
             # carregar no navio
 
@@ -286,7 +289,7 @@ def Rr6(Patio, Navio, porto_dict, Rc):  # Por linha, intercalando as linhas, 2
                             N_Rem += 1
                             flag = 1
                             break
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0  # remover o conteiner do patio
             # carregar no navio
 
@@ -310,7 +313,7 @@ def Rr7(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna
         j = int(j)
 
         if Patio[i - 1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0
             # carregar no navio
 
@@ -331,8 +334,8 @@ def Rr7(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna
                 temp = prioridades[prioridades > Patio[index_mover[c_rmj]][j]]
                 if len(temp) == 0:  # caso em que nenhuma das prioridades eh maior do que c. Escolher a menos pior.
                     _, jj = np.where(Patio == max(max(prioridades)))
-                    ii = np.nonzero(Patio[:, int(jj)])[0]
-                    Patio[ii[0] - 1][jj] = Patio[index_mover[c_rmj]][j]  # mover
+                    ii = L - np.count_nonzero(Patio[:, int(jj)])
+                    Patio[ii - 1][jj] = Patio[index_mover[c_rmj]][j]  # mover
                     Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                     N_Rem += 1
                 else:  # se satisfeita a condição, então colocar c nessa coluna não vai gerar nenhum movimento adicional.
@@ -346,12 +349,12 @@ def Rr7(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna
                                 Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                                 break
                     else:
-                        ii = np.nonzero(Patio[:, int(jj)])[0]
-                        Patio[ii[0] - 1][jj] = Patio[index_mover[c_rmj]][j]  # mover
+                        ii = L - np.count_nonzero(Patio[:, int(jj)]) - 1
+                        Patio[ii][jj] = Patio[index_mover[c_rmj]][j]  # mover
                         Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                     N_Rem += 1
 
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0  # remover o conteiner do patio
 
             # carregar no navio
@@ -381,7 +384,7 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
         j = int(j)
 
         if Patio[i - 1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0
             # carregar no navio
 
@@ -417,8 +420,8 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
                         temp = prioridades[prioridades > Patio[index_mover[c_rmj]][j]]
                         if len(temp) == 0:  # caso em que nenhuma das prioridades eh maior do que c. Escolher a menos pior.
                             _, jj = np.where(Patio == max(max(prioridades)))
-                            ii = np.nonzero(Patio[:, int(jj)])[0]
-                            Patio[ii[0] - 1][jj] = Patio[index_mover[c_rmj]][j]  # mover
+                            ii = L - np.count_nonzero(Patio[:, int(jj)]) - 1
+                            Patio[ii][jj] = Patio[index_mover[c_rmj]][j]  # mover
                             Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                             N_Rem += 1
                         else:  # se satisfeita a condição, então colocar c nessa coluna não vai gerar nenhum movimento adicional.
@@ -432,8 +435,8 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
                                         Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                                         break
                             else:
-                                ii = np.nonzero(Patio[:, int(jj)])[0]
-                                Patio[ii[0] - 1][jj] = Patio[index_mover[c_rmj]][j]  # mover
+                                ii = L - np.count_nonzero(Patio[:, int(jj)]) - 1
+                                Patio[ii][jj] = Patio[index_mover[c_rmj]][j]  # mover
                                 Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                             N_Rem += 1
                     # --------------------------------------------------------------------------------------------------#
@@ -450,9 +453,9 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
                     temp = prioridades[prioridades > c]
                     if len(temp) == 0:  # caso em que nenhuma das prioridades eh maior do que c. Escolher a menos pior.
                         _, jj = np.where(Patio == max(max(prioridades)))
-                        ii = np.nonzero(Patio[:, int(jj)])[0]
-                        Patio[ii[0] - 1][jj] = Patio[i][j]  # mover
-                        Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+                        ii = L - np.count_nonzero(Patio[:, int(jj)]) - 1
+                        Patio[ii][jj] = Patio[i][j]  # mover
+                        Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
                         Patio[i][j] = 0  # zera a posicao antiga
                         N_Rem += 1
                     else:  # se satisfeita a condição, então colocar c nessa coluna não vai gerar nenhum movimento adicional.
@@ -463,13 +466,13 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
                                     jj = n
                                     ii = L - 1
                                     Patio[ii][jj] = Patio[i][j]  # mover
-                                    Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+                                    Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
                                     Patio[i][j] = 0  # zera a posicao antiga
                                     break
                         else:
-                            ii = np.nonzero(Patio[:, int(jj)])[0]
-                            Patio[ii[0] - 1][jj] = Patio[i][j]  # mover
-                            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+                            ii = L - np.count_nonzero(Patio[:, int(jj)]) - 1
+                            Patio[ii][jj] = Patio[i][j]  # mover
+                            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
                             Patio[i][j] = 0  # zera a posicao antiga
                         N_Rem += 1
 
@@ -494,8 +497,8 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
                         if len(
                                 temp) == 0:  # caso em que nenhuma das prioridades eh maior do que c. Escolher a menos pior.
                             _, jj = np.where(Patio == max(max(prioridades)))
-                            ii = np.nonzero(Patio[:, int(jj)])[0]
-                            Patio[ii[0] - 1][jj] = Patio[index_mover[c_rmj]][j]  # mover
+                            ii = L - np.count_nonzero(Patio[:, int(jj)]) - 1
+                            Patio[ii][jj] = Patio[index_mover[c_rmj]][j]  # mover
                             Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                             N_Rem += 1
                         else:  # se satisfeita a condição, então colocar c nessa coluna não vai gerar nenhum movimento adicional.
@@ -509,11 +512,11 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
                                         Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                                         break
                             else:
-                                ii = np.nonzero(Patio[:, int(jj)])[0]
-                                Patio[ii[0] - 1][jj] = Patio[index_mover[c_rmj]][j]  # mover
+                                ii = L - np.count_nonzero(Patio[:, int(jj)]) - 1
+                                Patio[ii][jj] = Patio[index_mover[c_rmj]][j]  # mover
                                 Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                             N_Rem += 1
-                    Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+                    Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
                     Patio[i][j] = 0  # remover o conteiner do patio
 
                     # --------------------------------------------------------------------------------------------------#
@@ -523,7 +526,7 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
                     j = int(j)
 
                     if Patio[i - 1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
-                        Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+                        Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
                         Patio[i][j] = 0
                         # carregar no navio
 
@@ -545,8 +548,8 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
                             temp = prioridades[prioridades > Patio[index_mover[c_rmj]][j]]
                             if len(temp) == 0:  # caso em que nenhuma das prioridades eh maior do que c. Escolher a menos pior.
                                 _, jj = np.where(Patio == max(max(prioridades)))
-                                ii = np.nonzero(Patio[:, int(jj)])[0]
-                                Patio[ii[0] - 1][jj] = Patio[index_mover[c_rmj]][j]  # mover
+                                ii = L - np.count_nonzero(Patio[:, int(jj)]) - 1
+                                Patio[ii][jj] = Patio[index_mover[c_rmj]][j]  # mover
                                 Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                                 N_Rem += 1
                             else:  # se satisfeita a condição, então colocar c nessa coluna não vai gerar nenhum movimento adicional.
@@ -560,11 +563,11 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
                                             Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                                             break
                                 else:
-                                    ii = np.nonzero(Patio[:, int(jj)])[0]
-                                    Patio[ii[0] - 1][jj] = Patio[index_mover[c_rmj]][j]  # mover
+                                    ii = L - np.count_nonzero(Patio[:, int(jj)]) - 1
+                                    Patio[ii][jj] = Patio[index_mover[c_rmj]][j]  # mover
                                     Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                                 N_Rem += 1
-                        Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+                        Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
                         Patio[i][j] = 0  # remover o conteiner do patio
                     # --------------------------------------------------------------------------------------------------#
                     # --------------------------------------------------------------------------------------------------#
@@ -597,10 +600,10 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
                     temp = prioridades[prioridades > Patio[index_mover[c_rmj]][j]]
                     if len(temp) == 0:  # caso em que nenhuma das prioridades eh maior do que c. Escolher a menos pior.
                         _, jj = np.where(Patio == max(max(prioridades)))
-                        if jj == 0:
+                        if len(jj) == 0:
                             raise Exception('Solucao Infactivel')
-                        ii = np.nonzero(Patio[:, int(jj)])[0]
-                        Patio[ii[0] - 1][jj] = Patio[index_mover[c_rmj]][j]  # mover
+                        ii = L - np.count_nonzero(Patio[:, int(jj)]) - 1
+                        Patio[ii][jj] = Patio[index_mover[c_rmj]][j]  # mover
                         Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                         N_Rem += 1
                         N_Rem_aux += 1
@@ -615,12 +618,12 @@ def Rr8(Patio, Navio, porto_dict, Rc):  # Caserta - prioridades por coluna + 1 c
                                     Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                                     break
                         else:
-                            ii = np.nonzero(Patio[:, int(jj)])[0]
-                            Patio[ii[0] - 1][jj] = Patio[index_mover[c_rmj]][j]  # mover
+                            ii = L - np.count_nonzero(Patio[:, int(jj)]) - 1
+                            Patio[ii][jj] = Patio[index_mover[c_rmj]][j]  # mover
                             Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                         N_Rem += 1
                         N_Rem_aux += 1
-                Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+                Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
                 Patio[i][j] = 0  # remover o conteiner do patio
                 # carregar no navio
 
@@ -642,7 +645,7 @@ def Rr9(Patio, Navio, porto_dict, Rc):  # Regra da menor coluna
         j = int(j)
 
         if Patio[i - 1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0
             # carregar no navio
 
@@ -651,16 +654,29 @@ def Rr9(Patio, Navio, porto_dict, Rc):  # Regra da menor coluna
             for c_rmj in range(len(index_mover)):  # de 1 ateh a qntd de conteineres que devem ser remanejados
                 # buscar um local vazio:
                 Aux = np.count_nonzero(Patio, axis=0)
-                jj = np.argmin(Aux)  # coluna do menor valor em Aux # Only the first occurrence is returned.
-                int(jj)
-                if jj == j:  # se eh a mesma coluna em que o conteiner jah estah
-                    Aux = np.delete(Aux, jj)
-                    jj = np.argmin(Aux)
-                    int(jj)
-                Patio[L - Aux[jj] - 1][jj] = Patio[index_mover[c_rmj]][j]  # mover
-                Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
-                N_Rem += 1
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+                #jj = np.argmin(Aux)  # coluna do menor valor em Aux # Only the first occurrence is returned.
+                jj = np.where(Aux == np.min(Aux))[0]
+                marcador = 0
+                for coluna in jj:
+                    if marcador == 1:
+                        continue
+                    if coluna != j:  # se eh a mesma coluna em que o conteiner jah estah
+                        Patio[L - Aux[coluna] - 1][coluna] = Patio[index_mover[c_rmj]][j]  # mover
+                        Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
+                        N_Rem += 1
+                        break
+                    else:
+                        if len(jj) == 1:
+                            segunda_menor_coluna = np.amin(Aux[Aux != np.amin(Aux)])
+                            jj = np.where(Aux == segunda_menor_coluna)[0]
+                            for coluna2 in jj:
+                                Patio[L - Aux[coluna2] - 1][coluna2] = Patio[index_mover[c_rmj]][j]  # mover
+                                Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
+                                N_Rem += 1
+                                marcador = 1
+                                break
+
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0  # remover o conteiner do patio
             # carregar no navio
 
@@ -683,12 +699,13 @@ def Rr10(Patio, Navio, porto_dict, Rc):  # Regra da coluna mais próxima
         j = int(j)
 
         if Patio[i - 1][j] == 0 or i == 0:  # se nao tem nenhum conteiner bloqueando ou se eh topo
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0
             # carregar no navio
         else:
             index_mover = np.nonzero(Patio[:i, j])[0]  # identificar as linhas que tem conteineres acima bloqueando.
             for c_rmj in range(len(index_mover)):  # de 1 ateh a qntd de conteineres que devem ser remanejados
+                flag = 0
                 # buscar um local vazio:
                 Aux = np.count_nonzero(Patio, axis=0)
                 # ------------------------------------------------------------------------------------------------------#
@@ -712,33 +729,39 @@ def Rr10(Patio, Navio, porto_dict, Rc):  # Regra da coluna mais próxima
                 # ------------------------------------------------------------------------------------------------------#
                 # ------------------------------------------------------------------------------------------------------#
                 if 0 < j < C - 1:
-                    for j_aux1 in range(j - 1, -1, -1):  # linhas de baixo para cima
-                        for j_aux2 in range(j + 1, C):  # linhas de baixo para cima
+                    for j_aux1 in range(j - 1, -1, -1):  # colunas para a esquerda
+                        if flag == 1:
+                            break
+                        for j_aux2 in range(j + 1, C):   # colunas para a direita
                             if Aux[j_aux1] <= Aux[j_aux2]:
                                 if Aux[j_aux1] != L:  # se a coluna nao estah cheia
                                     Patio[L - Aux[j_aux1] - 1][j_aux1] = Patio[index_mover[c_rmj]][j]  # mover
                                     Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                                     N_Rem += 1
+                                    flag = 1
                                     break
                                 else:
                                     if Aux[j_aux2] != L:  # se a coluna nao estah cheia
                                         Patio[L - Aux[j_aux2] - 1][j_aux2] = Patio[index_mover[c_rmj]][j]  # mover
                                         Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                                         N_Rem += 1
+                                        flag = 1
                                         break
                             else:
                                 if Aux[j_aux2] != L:  # se a coluna nao estah cheia
                                     Patio[L - Aux[j_aux2] - 1][j_aux2] = Patio[index_mover[c_rmj]][j]  # mover
                                     Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                                     N_Rem += 1
+                                    flag = 1
                                     break
                                 else:
                                     if Aux[j_aux1] != L:  # se a coluna nao estah cheia
                                         Patio[L - Aux[j_aux1] - 1][j_aux1] = Patio[index_mover[c_rmj]][j]  # mover
                                         Patio[index_mover[c_rmj]][j] = 0  # zera a posicao antiga
                                         N_Rem += 1
+                                        flag = 1
                                         break
-            Navio = eval(Rc)(Navio, Patio[i][j], porto_dict)
+            Navio = eval(Rc)(Navio, Patio[i][j].copy(), porto_dict)
             Patio[i][j] = 0  # remover o conteiner do patio
 
     return Navio, N_Rem  # , Navio
@@ -939,9 +962,11 @@ def Rc9(Navio, cont, porto_dict):  # This rule fills the ship matrix through a s
                     if len(col) > 1:
                         col = col[0]
                     ii = np.nonzero(Navio_aux[:, int(col)])[0]
-                    Navio[b][ii[0] - 1][col] = cont
+                    if len(ii) == 0:
+                        Navio[b][L - 1][col] = cont
+                    else:
+                        Navio[b][ii[0] - 1][col] = cont
                     return Navio
-
     return Navio
 
 # -----------------------------------------------------------------#
@@ -1000,7 +1025,10 @@ def Rc10(Navio, cont, porto_dict):  # This rule fills the ship matrix through a 
                     if len(col) > 1:
                         col = col[0]
                     ii = np.nonzero(Navio_aux[:, int(col)])[0]
-                    Navio[b][ii[0] - 1][col] = cont
+                    if len(ii) == 0:
+                        Navio[b][L - 1][col] = cont
+                    else:
+                        Navio[b][ii[0] - 1][col] = cont
                     return Navio
 
     return Navio
@@ -1319,12 +1347,16 @@ def Rd3(Navio, porto_dict, porto_atual, Rr, Rc):
                                             if n != c:
                                                 if Aux[n] != 0:  # se nao eh a mesma coluna do conteiner que vai sair e se a coluna nao eh vazia
                                                     # pegar o menor valor diferente de 0 dessa coluna
-                                                    prioridades[0, n] = np.min(Navio[b][:, n][np.nonzero(Navio[b][:, n])])
+                                                    #prioridades[0, n] = porto_dict[np.min(Navio[b][:, n][np.nonzero(Navio[b][:, n])])]
+                                                    # verficar os portos de destino dos conteineres desta coluna: O que sai antes eh o que vai para a lista de prioridades
+                                                    lista = Navio[b][:, n][np.nonzero(Navio[b][:, n])]
+                                                    prioridades[0, n] = min([porto_dict[x] for x in lista])
                                                 else:
-                                                    prioridades[0, n] = Navio[b][index_mover[c_rmj]][c] + 1
+                                                    prioridades[0, n] = 0
 
                                         else:
-                                            prioridades[0, n] = P + 1
+                                            # se a coluna estah cheia, o valor eh 0
+                                            prioridades[0, n] = 0
                                 else:
                                     #  nao tem onde remanejar nessa baia.
                                     patio_transb.append(Navio[b][index_mover[c_rmj]][c])
@@ -1332,14 +1364,14 @@ def Rd3(Navio, porto_dict, porto_atual, Rr, Rc):
                                     N_Rem += 1
                                     continue
 
-                                temp = prioridades[(prioridades > porto_dict[Navio[b][index_mover[c_rmj]][c]]) & (prioridades < P)]
+                                temp = prioridades[(prioridades >= porto_dict[Navio[b][index_mover[c_rmj]][c]]) & (prioridades != 0)]
                                 if len(temp) == 0:  # caso em que nenhuma das prioridades eh maior do que c. Descarregar do navio.
                                     patio_transb.append(Navio[b][index_mover[c_rmj]][c])
                                     Navio[b][index_mover[c_rmj]][c] = 0
                                     N_Rem += 1
                                     continue
                                 else:  # se satisfeita a condição, então colocar c nessa coluna não vai gerar nenhum movimento adicional.
-                                    _, jj = np.where(Navio[b] == min(temp))
+                                    _, jj = np.where(prioridades == min(temp))
                                     if len(jj) == 0:
                                         for n in range(C):
                                             if Aux[n] == 0:
@@ -1347,7 +1379,15 @@ def Rd3(Navio, porto_dict, porto_atual, Rr, Rc):
                                                 ii = L - 1
                                                 Navio[b][ii][jj] = Navio[b][index_mover[c_rmj]][c]  # mover
                                                 Navio[b][index_mover[c_rmj]][c] = 0  # zera a posicao antiga
-                                                break
+                                                N_Rem += 1
+                                                continue
+                                    else:
+                                        jj = jj[0]
+                                        ii = L - np.count_nonzero(Navio[b][:, int(jj)]) - 1
+                                        Navio[b][ii][jj] = Navio[b][index_mover[c_rmj]][c]  # mover
+                                        Navio[b][index_mover[c_rmj]][c] = 0  # zera a posicao antiga
+                                        N_Rem += 1
+                                        continue
 
                             # depois de que nao houver mais nenhum conteiner bloqueando a saida, retirar o cont objetivo
                             Navio[b][l][c] = 0
@@ -1369,7 +1409,7 @@ def Rd3(Navio, porto_dict, porto_atual, Rr, Rc):
 
 
 if __name__ == '__main__':
-    data = loadmat('Instancia3D-1-Tipo-1-Ocupacao-1.mat')
+    data = loadmat('Instancia3D-11-Tipo-1-Ocupacao-2.mat')
     # Patios = data['Patios'].tolist()
     # Patio = Patios[0][0]
     Navio = data['Navio'].tolist()

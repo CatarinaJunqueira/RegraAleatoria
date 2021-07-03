@@ -1,9 +1,12 @@
 import random
-#from random import random
+import copy
 import matplotlib.pyplot as plt
 from Regras import SimulaRegras
 from scipy.io import loadmat
 from CreateData import CreateData
+import time
+import pandas as pd
+#import multiprocessing
 
 class Produto:
     def __init__(self, nome, espaco, valor):
@@ -38,22 +41,35 @@ class Individuo:
         self.Num_portos = Num_portos
         self.geracao = geracao
         self.cromossomo = []
+        self.conf_navio = []
+        self.num_movimentos = 0
 
         for i in range(Num_portos):
             self.cromossomo.append(random.randint(lbound, ubound))
 
 
-    def avaliacao(self, patios, navio, porto_dict):
+    def avaliacao(self, patios, navio, porto_dict, flag):
         # passar por todos os genes, simular cada um e obter o fitness final de cada individuo
+        navio_vazio = copy.deepcopy(navio)
+        conf_patios = copy.deepcopy(patios)
+        #navio = copy.deepcopy(navio_vazio)
         fitness = 0
+        my_dict = {key: 0 for key in range(len(self.cromossomo))}
         for i in range(len(self.cromossomo)):
             Rr, Rc, Rd = NumToRules(self.cromossomo[i], NRr, NRc, NRd)
-            #Rc='Rc2'
-            #Rr = 'Rr8'
-            num_movimentos_total = SimulaRegras(i, patios[i], navio, porto_dict, Rr, Rc, Rd)
+            #Rc = 'Rc11'
+            #Rr = 'Rr10'
+            #Rd = 'Rd3'
+            num_movimentos_total, navio_vazio = SimulaRegras(i, conf_patios[i], navio_vazio, porto_dict, Rr, Rc, Rd)
             fitness += num_movimentos_total
+            if flag == 1:
+                save_navio_vazio = copy.deepcopy(navio_vazio)
+                my_dict[i] = save_navio_vazio.copy()
 
-        self.fitness = fitness
+        self.fitness = 1/(num_movimentos_total + 1)
+        self.num_movimentos = num_movimentos_total
+        self.conf_navio = my_dict
+        return
 
 
     def crossover(self, outro_individuo):
@@ -72,7 +88,7 @@ class Individuo:
         # print("Antes %s " % self.cromossomo)
         for i in range(len(self.cromossomo)):
             if random.random() < taxa_mutacao:
-                random.randint(lbound, ubound)
+                self.cromossomo[i] = random.randint(lbound, ubound)
 
         return self
 
@@ -85,6 +101,7 @@ class AlgoritmoGenetico:
         self.melhor_solucao = 0
         self.num_movimentos = 0
         self.lista_solucoes = []
+        self.lista_num_movimentos = []
 
     def inicializa_populacao(self, lbound, ubound, Num_portos):
         for i in range(self.tamanho_populacao):
@@ -94,7 +111,7 @@ class AlgoritmoGenetico:
     def ordena_populacao(self):
         # ordenar do individuo com o menor para o maior numero total de movimentos
         self.populacao = sorted(self.populacao,
-                                key=lambda populacao: populacao.fitness,
+                                key=lambda populacao: populacao.num_movimentos,
                                 reverse=False)
 
     def melhor_individuo(self, individuo):
@@ -120,27 +137,37 @@ class AlgoritmoGenetico:
 
     def visualiza_geracao(self):
         melhor = self.populacao[0]
-        print("Geração: %s -> Numero de Movimentos: %s Regra: %s" % (self.populacao[0].geracao,
-                                                                     melhor.fitness,
-                                                                     melhor.cromossomo))
+        print("Geração: %s -> Numero de Remanejamentos: %s Regra: %s" % (self.populacao[0].geracao,
+                                                                         melhor.num_movimentos,
+                                                                         melhor.cromossomo))
 
-    def resolver(self, lbound, ubound, taxa_mutacao, numero_geracoes, patios, navio, porto_dict, Num_portos):
+    def resolver(self, lbound, ubound, taxa_mutacao, numero_geracoes, patios, navio, porto_dict, Num_portos, tempo_inicio):
         self.inicializa_populacao(lbound, ubound, Num_portos)
-
+        #navio_vazio = copy.deepcopy(navio)
         for individuo in self.populacao:
-            individuo.avaliacao(patios, navio, porto_dict)
+            individuo.avaliacao(patios, navio, porto_dict, 0)
 
         self.ordena_populacao()   # ordenar a populacao por numero de movimentos de cada individuo
         self.melhor_solucao = self.populacao[0]
         self.lista_solucoes.append(self.melhor_solucao.fitness)
+        self.lista_num_movimentos.append(self.melhor_solucao.num_movimentos)
+        melhor_solucao_geracao_anterior = self.melhor_solucao.num_movimentos
 
         self.visualiza_geracao()
 
+        i_contador = 0
+        Flag = 0
         for geracao in range(numero_geracoes):
+            if geracao == numero_geracoes - 1:
+                # se a ultima geracao, salvar o navio
+                Flag = 1
             soma_avaliacao = self.soma_avaliacoes()
+
             nova_populacao = []
 
-            for individuos_gerados in range(0, self.tamanho_populacao, 2):
+            self.populacao[0].geracao +=1
+            nova_populacao.append(self.populacao[0])
+            for individuos_gerados in range(0, self.tamanho_populacao-1, 2):
                 pai1 = self.seleciona_pai(soma_avaliacao)
                 pai2 = self.seleciona_pai(soma_avaliacao)
 
@@ -152,45 +179,147 @@ class AlgoritmoGenetico:
             self.populacao = list(nova_populacao)
 
             for individuo in self.populacao:
-                individuo.avaliacao(patios, navio, porto_dict)
-
+                individuo.avaliacao(patios, navio, porto_dict, Flag)
+            #pool.map(individuo.avaliacao(patios, navio, porto_dict, Flag), individuo in self.populacao)
+            #pool.close()
+            #pool.join()
             self.ordena_populacao()
 
             self.visualiza_geracao()
 
             melhor = self.populacao[0]
             self.lista_solucoes.append(melhor.fitness)
+            self.lista_num_movimentos.append(self.melhor_solucao.num_movimentos)
             self.melhor_individuo(melhor)
+
+            melhor_solucao_desta_geracao = self.melhor_solucao.num_movimentos
+
+            if time.time() - start_time >= 3600:  # tempo limite: 1 hora
+                break
+            if melhor_solucao_desta_geracao >= melhor_solucao_geracao_anterior:
+                i_contador += 1
+                if i_contador == 15:  # numero maximo de geracoes sem melhoria na F.O.
+                    break
+            else:
+                melhor_solucao_geracao_anterior = self.melhor_solucao.num_movimentos
+                i_contador = 0
+
 
         print("\nMelhor solução -> G: %s Valor: %s Cromossomo: %s" %
               (self.melhor_solucao.geracao,
-               self.melhor_solucao.fitness,
+               self.melhor_solucao.num_movimentos,
                self.melhor_solucao.cromossomo))
+
+
+
 
         return self.melhor_solucao.cromossomo
 
 
 if __name__ == '__main__':
 
-    data = loadmat('Instancia3D-1-Tipo-1-Ocupacao-1.mat')
-    patios, navio, porto_dict, Num_portos = CreateData(data)
-    limite = 3
-    tamanho_populacao = 10
-    taxa_mutacao = 0.01
-    taxa_crossover = 0.8
-    numero_geracoes = 100
-    NRr = 7  # numero de regras de retirada do patio
-    NRc = 8  # numero de regras de carregamento
-    NRd = 3   # numero de regras de descarregamento
-    lbound = 1
-    ubound = NRc*NRr*NRd  # total de combinação de regras
-    ag = AlgoritmoGenetico(tamanho_populacao)
-    resultado = ag.resolver(lbound, ubound, taxa_mutacao, numero_geracoes, patios, navio, porto_dict, Num_portos)
+    lista_FO = []
+    lista_Fitness = []
+    solucao = []
+    num_instancias = 10
+    i = 28  # instancia
+    for b in range(1,4):
+        for c in range(1,4):
+            instancia = 'Instancia3D-' + str(i) + '-Tipo-' + str(b) + '-Ocupacao-' + str(c) + '.mat'
+            i += 1
+            print("\nInstancia: %s" % instancia)
+            data = loadmat(instancia)
+            patios, navio, porto_dict, Num_portos = CreateData(data)
+
+            if i == 29 or i == 30 or i == 20 or i == 21:
+                navio.append(navio[0].copy())
+            if i == 31:
+                navio.append(navio[0].copy())
+                navio.append(navio[0].copy())
+                navio.append(navio[0].copy())
+                navio.append(navio[0].copy())
+
+           # limite = 3
+            tamanho_populacao = 10
+            taxa_mutacao = 0.30
+            taxa_crossover = 0.8
+            numero_geracoes = 200
+            NRr = 10  # numero de regras de retirada do patio
+            NRc = 11  # numero de regras de carregamento
+            NRd = 3   # numero de regras de descarregamento
+            lbound = 1
+            ubound = NRc*NRr*NRd  # total de combinação de regras
+
+            #pool = multiprocessing.Pool(processes=4)
+            start_time = time.time()
+            ag = AlgoritmoGenetico(tamanho_populacao)
+            resultado = ag.resolver(lbound, ubound, taxa_mutacao, numero_geracoes, patios, navio, porto_dict, Num_portos, start_time)
+            end_time = (time.time() - start_time)
+            #pool.close()
+            #pool.join()
+
+            lista_FO.append(ag.lista_num_movimentos)
+            lista_Fitness.append(ag.lista_num_movimentos)
+            solucao.append((resultado, ag.melhor_solucao.num_movimentos, end_time))
 
 
-    # for valor in ag.lista_solucoes:
-    #    print(valor)
-    plt.plot(ag.lista_solucoes)
-    plt.title("Acompanhamento dos valores")
+    # Graficos:
+    linestyles = ['-', '--', '-.', ':']
+    markerstyles = ['v', 'o', '.', ',', '1', '2', '3', '4',' ']
+    ii = 28 # instancia
+    kk = 1
+    for k in range(len(lista_FO)):
+        name = 'Instance ' + str(ii)
+        plt.plot(lista_FO[k], label = name, ls = linestyles[kk]) #, marker = "v")
+        ii += 1
+        kk += 1
+        if kk == 4:
+            kk = 0
+    plt.title('Objective Function Evolution')
+    plt.xlabel('Number of Iterations')
+    plt.ylabel('Number of Relocations')
+    plt.legend()
     plt.show()
 
+    # for i in range(len(lista_Fitness)):
+    #     name = 'Instance ' + str(i + 1)
+    #     plt.plot(lista_FO[i], label = name)
+    # plt.plot(ag.lista_solucoes)
+    # plt.title('Fitness Evolution')
+    # plt.xlabel('Number of Iterations')
+    # plt.ylabel('Fitness Value')
+    # plt.legend()
+    # plt.show()
+
+    df = pd.DataFrame(solucao,columns=['Individuo', 'Numero de Remanejamentos', 'Tempo de Execucao'])
+    df['Regras'] = None
+    for index, row in df.iterrows():
+        individuo = row['Individuo']
+        list = []
+        for gene in individuo:
+            Rr, Rc, Rd = NumToRules(gene, NRr, NRc, NRd)
+            list.append((Rr, Rc, Rd))
+
+        df['Regras'][index] = list
+
+    list = []
+    for dd in range(df.shape[0]):
+        b = [i for sub in df['Regras'][dd] for i in sub]
+        list.extend(b)
+
+    count_map = {}
+    for t in list:
+        count_map[t] = count_map.get(t, 0) + 1
+    ocorrencias_regras = pd.DataFrame.from_dict(count_map, orient='index')
+
+    # nome_csv = instancia + 'solucao_mutacao_maior.csv'
+    # df.to_csv(nome_csv, sep=';', index=False)
+    #
+    # nome_csv = instancia + '_ocorrencias_mutacao_maior.csv'
+    # ocorrencias_regras.to_csv(nome_csv, sep=';')
+
+    nome_excel = instancia + '_solucao.xlsx'
+    df.to_excel(nome_excel, index=False)
+
+    nome_excel = instancia + '_ocorrencias.xlsx'
+    ocorrencias_regras.to_excel(nome_excel)

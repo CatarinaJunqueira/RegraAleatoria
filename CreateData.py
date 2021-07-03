@@ -5,6 +5,7 @@ def CreateData(data):
     # Patio = Patios[0][0]
     Navio = data['Navio'].tolist()
     Navio = Navio[0]
+    Navio = [np.int32(N) for N in Navio]
 
     p = data['patio'].tolist()
     Num_portos = len(p)
@@ -12,6 +13,7 @@ def CreateData(data):
     Patios = []
     for i in range(Num_portos):
         Patios.append(p[i][0])
+    Patios = [np.int32(P) for P in Patios]
 
     df = pd.DataFrame(data=data['porto'].T, columns=['porto','conteiner'])
     porto_dict = df.set_index('conteiner').to_dict()['porto']
